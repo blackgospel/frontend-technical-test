@@ -1,35 +1,53 @@
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
-import { render } from '@testing-library/react';
-import VehicleList from '..';
-import useData from '../useData';
+import VehicleItem from '..';
 
 jest.mock('../useData');
+describe('<VehicleItem /> Tests', () => {
+  test('renders vehicle item correctly', () => {
+    const vehicle = {
+      id: '123',
+      name: 'Test Vehicle',
+      description: 'This is a test vehicle',
+      price: '£100,000',
+      media: {
+        name: 'Test Image',
+        url: 'test-image.jpg',
+      },
+    };
 
-describe('<VehicleList /> Tests', () => {
-  it('Should show loading state if it not falsy', () => {
-    useData.mockReturnValue([true, 'An error occurred', 'results']);
-    const { queryByTestId } = render(<VehicleList />);
+    render(<VehicleItem vehicle={vehicle} index={0} />);
 
-    expect(queryByTestId('loading')).not.toBeNull();
-    expect(queryByTestId('error')).toBeNull();
-    expect(queryByTestId('results')).toBeNull();
+    const vehicleItem = screen.getByRole('button');
+    expect(vehicleItem).toBeInTheDocument();
+
+    expect(screen.getByText('Test Vehicle')).toBeInTheDocument();
+    expect(screen.getByText('This is a test vehicle')).toBeInTheDocument();
+    expect(screen.getByText('£100,000')).toBeInTheDocument();
   });
 
-  it('Should show error if it is not falsy and loading is finished', () => {
-    useData.mockReturnValue([false, 'An error occurred', 'results']);
-    const { queryByTestId } = render(<VehicleList />);
+  test('opens modal when clicked', () => {
+    const vehicle = {
+      id: '123',
+      name: 'Test Vehicle',
+      description: 'This is a test vehicle',
+      price: '£100,000',
+      media: {
+        name: 'Test Image',
+        url: 'test-image.jpg',
+      },
+    };
 
-    expect(queryByTestId('loading')).toBeNull();
-    expect(queryByTestId('error')).not.toBeNull();
-    expect(queryByTestId('results')).toBeNull();
-  });
+    render(<VehicleItem vehicle={vehicle} index={0} />);
 
-  it('Should show results if loading successfully finished', () => {
-    useData.mockReturnValue([false, false, 'results']);
-    const { queryByTestId } = render(<VehicleList />);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
-    expect(queryByTestId('loading')).toBeNull();
-    expect(queryByTestId('error')).toBeNull();
-    expect(queryByTestId('results')).not.toBeNull();
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    expect(screen.getByText('Test Vehicle')).toBeInTheDocument();
+    expect(screen.getByText('Emissions:')).toBeInTheDocument();
+    expect(screen.getByText('Passenger Capacity:')).toBeInTheDocument();
   });
 });
